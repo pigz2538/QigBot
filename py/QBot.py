@@ -32,11 +32,11 @@ class RulesClass:
         self.is_continue = 0
         self.is_administrator = 0
     
-    def is_rules(msg):
+    def is_rules(self, msg):
         rules = ['禁止群消息', '允许群消息']
         if msg in rules:
             return 1
-        else: 
+        else:
             return 0
 
 # openai.OpenAIError
@@ -83,7 +83,7 @@ def get_message():
         print("收到私聊消息：")
         print(message)
         # 下面你可以执行更多逻辑，这里只演示与ChatGPT对话
-        if chat_rules.is_rules(message):
+        if chat_rules.is_rules(str(message)):
             if chat_rules.is_administrator:  # 判断是否管理员
                 if message.strip().startswith('禁止群消息'):
                     chat_rules.is_group = 0
@@ -120,9 +120,9 @@ def get_message():
         if str("[CQ:at,qq=%s]" % qq_no) in message:
             sender = request.get_json().get('sender')  # 消息发送者的资料
             print("收到群聊消息：")
-            print(message)
             message = str(message).replace(str("[CQ:at,qq=%s]" % qq_no), '')
-            if chat_rules.is_rules(message):
+            print(message)
+            if chat_rules.is_rules(str(message)):
                 if chat_rules.is_administrator:  # 判断是否管理员
                     if message.strip().startswith('禁止群消息'):
                         chat_rules.is_group = 0
@@ -138,7 +138,6 @@ def get_message():
                 return 'group_no'
             if message.strip().startswith('生成图像'):
                 message = str(message).replace('生成图像', '')
-                # 将ChatGPT的描述转换为图画
                 print('开始生成图像')
                 pic_path = get_openai_image(message)
                 send_group_message_image(gid, pic_path, uid)
