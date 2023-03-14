@@ -86,7 +86,7 @@ def get_message():
             elif message.strip().startswith('禁止群消息') or message.strip().startswith('允许群消息'):
                 send_private_message(uid, '看起来你好像不是纯种猪喔')
 
-        if message.strip().startswith('生成图像'):
+        elif message.strip().startswith('生成图像'):
             message = str(message).replace('生成图像', '')
             msg_text = chat(message, 'P' + str(uid))  # 将消息转发给ChatGPT处理
             # 将ChatGPT的描述转换为图画
@@ -108,12 +108,12 @@ def get_message():
         if chat_rules.is_administrator:  # 判断是否管理员
             if message.strip().startswith('禁止群消息'):
                 chat_rules.is_group = 0
-                send_group_message(uid, '已禁止群消息')
+                send_group_message(gid, '已禁止群消息', uid)
             elif message.strip().startswith('允许群消息'):
                 chat_rules.is_group = 1
-                send_group_message(uid, '已允许群消息')
+                send_group_message(gid, '已允许群消息', uid)
             elif message.strip().startswith('禁止群消息') or message.strip().startswith('允许群消息'):
-                send_group_message(uid, '看起来你好像不是纯种猪喔')
+                send_group_message(gid, '看起来你好像不是纯种猪喔', uid)
         if chat_rules.is_group == 0:
             return 'group_no'
         # 判断当被@时才回答
@@ -223,12 +223,6 @@ def chat(msg, sessionid):
             return '你好鸭，我是猪猪!'
         # 获得对话session
         session = get_chat_session(sessionid)
-        if '禁止群消息' == msg.strip():
-            chat_rules.is_group = 0
-            return '已禁止群消息'
-        if '允许群消息' == msg.strip():
-            chat_rules.is_group = 1
-            return '已允许群消息'
         if '重置会话' == msg.strip():
             # 清除对话内容但保留人设
             del session['msg'][1:len(session['msg'])]
