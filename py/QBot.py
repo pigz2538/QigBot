@@ -120,18 +120,18 @@ def get_message():
         if str("[CQ:at,qq=%s]" % qq_no) in message:
             sender = request.get_json().get('sender')  # 消息发送者的资料
             print("收到群聊消息：")
-            message = str(message).replace(str("[CQ:at,qq=%s]" % qq_no), '')
+            message = str(message).replace(str("[CQ:at,qq=%s] " % qq_no), '')
             print(message)
             if chat_rules.is_rules(str(message)):
                 if chat_rules.is_administrator:  # 判断是否管理员
                     if message.strip().startswith('禁止群消息'):
                         chat_rules.is_group = 0
-                        send_private_message(uid, '已禁止群消息')
+                        send_group_message(gid, '已禁止群消息', uid)
                     elif message.strip().startswith('允许群消息'):
                         chat_rules.is_group = 1
-                        send_private_message(uid, '已允许群消息')
+                        send_group_message(gid, '已允许群消息', uid)
                 else:
-                    send_private_message(uid, '看起来你好像不是纯种猪喔')
+                    send_group_message(gid, '看起来你好像不是纯种猪喔', uid)
                 return 'ok'
                 
             if chat_rules.is_group == 0:
@@ -253,7 +253,7 @@ def chat(msg, sessionid):
             chat_rules.is_continue = 0
             return '单次对话模式已开启'
         if '指令说明' == msg.strip():
-            return "指令如下(群内需@机器人)：\n1.[重置会话]\n2.[设置人格] 请发送 设置人格+人格描述\n3.[重置人格]\n4.[指令说明]\n5.[禁止群消息]\n6.[允许群消息]\n7.[快干活啦]\n8.[单次对话]\n9.[连续对话]\n10.[生成图片]"
+            return "指令如下(群内需@机器人)：\n1.[重置会话]\n2.[设置人格] 请发送 设置人格+人格描述\n3.[重置人格]\n4.[指令说明]\n5.[禁止群消息]\n6.[允许群消息]\n7.[快干活啦]\n8.[单次对话]\n9.[连续对话]\n10.[生成图像]"
         if msg.strip().startswith('设置人格'):
             # 清空对话并设置人设
             session['msg'] = [
