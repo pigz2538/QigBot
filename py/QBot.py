@@ -33,7 +33,11 @@ class RulesClass:
         self.is_administrator = 0
     
     def is_rules(msg):
-        private
+        rules = ['禁止群消息', '允许群消息']
+        if msg in rules:
+            return 1
+        else 
+            return 0
 
 # openai.OpenAIError
 chat_rules = RulesClass()
@@ -79,18 +83,18 @@ def get_message():
         print("收到私聊消息：")
         print(message)
         # 下面你可以执行更多逻辑，这里只演示与ChatGPT对话
-        if chat_rules.is_administrator:  # 判断是否管理员
-            if message.strip().startswith('禁止群消息'):
-                chat_rules.is_group = 0
-                send_private_message(uid, '已禁止群消息')
-                return 'ok'
-            elif message.strip().startswith('允许群消息'):
-                chat_rules.is_group = 1
-                send_private_message(uid, '已允许群消息')
-                return 'ok'
-            elif message.strip().startswith('禁止群消息') or message.strip().startswith('允许群消息'):
+        if chat_rules.is_rules(message):
+            if chat_rules.is_administrator:  # 判断是否管理员
+                if message.strip().startswith('禁止群消息'):
+                    chat_rules.is_group = 0
+                    send_private_message(uid, '已禁止群消息')
+                elif message.strip().startswith('允许群消息'):
+                    chat_rules.is_group = 1
+                    send_private_message(uid, '已允许群消息')
+            else:
                 send_private_message(uid, '看起来你好像不是纯种猪喔')
-                return 'ok'
+            
+            return 'ok'
                     
         if message.strip().startswith('生成图像'):
             message = str(message).replace('生成图像', '')
@@ -118,18 +122,17 @@ def get_message():
             print("收到群聊消息：")
             print(message)
             message = str(message).replace(str("[CQ:at,qq=%s]" % qq_no), '')
-            if chat_rules.is_administrator:  # 判断是否管理员
-                if message.strip().startswith('禁止群消息'):
-                    chat_rules.is_group = 0
-                    send_group_message(gid, '已禁止群消息', uid)
-                    return 'ok'
-                elif message.strip().startswith('允许群消息'):
-                    chat_rules.is_group = 1
-                    send_group_message(gid, '已允许群消息', uid)
-                    return 'ok'
-                elif message.strip().startswith('禁止群消息') or message.strip().startswith('允许群消息'):
-                    send_group_message(gid, '看起来你好像不是纯种猪喔', uid)
-                    return 'ok'
+            if chat_rules.is_rules(message):
+                if chat_rules.is_administrator:  # 判断是否管理员
+                    if message.strip().startswith('禁止群消息'):
+                        chat_rules.is_group = 0
+                        send_private_message(uid, '已禁止群消息')
+                    elif message.strip().startswith('允许群消息'):
+                        chat_rules.is_group = 1
+                        send_private_message(uid, '已允许群消息')
+                else:
+                    send_private_message(uid, '看起来你好像不是纯种猪喔')
+                return 'ok'
                 
             if chat_rules.is_group == 0:
                 return 'group_no'
