@@ -36,7 +36,7 @@ class RulesClass:
         rules = ['禁止群消息', '允许群消息']
         if msg in rules:
             return 1
-        else 
+        else: 
             return 0
 
 # openai.OpenAIError
