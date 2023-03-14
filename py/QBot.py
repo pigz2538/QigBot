@@ -235,8 +235,10 @@ def chat(msg, sessionid):
             return '人格已重置'
         if '连续对话' == msg.strip():
             chat_rules.is_continue = 1
+            return '连续对话模式已开启'
         if '单次对话' == msg.strip():
-            chat_rules.is_continue = 1
+            chat_rules.is_continue = 0
+            return '单次对话模式已开启'
         if '指令说明' == msg.strip():
             return "指令如下(群内需@机器人)：\n1.[重置会话]\n2.[设置人格] 请发送 设置人格+人格描述\n3.[重置人格]\n4.[指令说明]\n5.[禁止群消息]\n6.[允许群消息]\n7.[快干活啦]\n8.[单次对话]\n9.[连续对话]\n10.[生成图片]"
         if msg.strip().startswith('设置人格'):
