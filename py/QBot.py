@@ -29,8 +29,8 @@ class RulesClass:
         self.current_key_index = 0
         self.is_group = 1
         self.key_number = 1
-        self.is_continue = 0
-        self.is_administrator = 0
+        self.is_continue = {}
+        self.is_administrator = [2281717797]
     
     def is_rules(self, msg):
         rules = ['禁止群消息', '允许群消息']
@@ -73,18 +73,13 @@ def get_message():
     uid = request.get_json().get('sender').get('user_id')  # 获取信息发送者的 QQ号码
     message = request.get_json().get('raw_message')  # 获取原始信息
 
-    if uid == 2281717797: # 判断是否管理员
-        chat_rules.is_administrator = 1
-    else:
-        chat_rules.is_administrator = 0
-
     if request.get_json().get('message_type') == 'private':  # 如果是私聊信息
         sender = request.get_json().get('sender')  # 消息发送者的资料
         print("收到私聊消息：")
         print(message)
         # 下面你可以执行更多逻辑，这里只演示与ChatGPT对话
         if chat_rules.is_rules(str(message)):
-            if chat_rules.is_administrator:  # 判断是否管理员
+            if uid in chat_rules.is_administrator:  # 判断是否管理员
                 if message.strip().startswith('禁止群消息'):
                     chat_rules.is_group = 0
                     send_private_message(uid, '已禁止群消息')
@@ -98,14 +93,7 @@ def get_message():
                     
         if message.strip().startswith('生成图像'):
             message = str(message).replace('生成图像', '')
-            msg_text = chat(message, 'P' + str(uid))  # 将消息转发给ChatGPT处理
-            # 将ChatGPT的描述转换为图画
             print('开始生成图像')
-            pic_path = get_openai_image(msg_text)
-            send_private_message_image(uid, pic_path, msg_text)
-        elif message.strip().startswith('直接生成图像'):
-            message = str(message).replace('直接生成图像', '')
-            print('开始直接生成图像')
             pic_path = get_openai_image(message)
             send_private_message_image(uid, pic_path, '')
         else:
@@ -115,7 +103,6 @@ def get_message():
     if request.get_json().get('message_type') == 'group':  # 如果是群消息
         gid = request.get_json().get('group_id')  # 群号
 
-        
         # 判断当被@时才回答
         if str("[CQ:at,qq=%s]" % qq_no) in message:
             sender = request.get_json().get('sender')  # 消息发送者的资料
@@ -123,7 +110,7 @@ def get_message():
             message = str(message).replace(str("[CQ:at,qq=%s] " % qq_no), '')
             print(message)
             if chat_rules.is_rules(str(message)):
-                if chat_rules.is_administrator:  # 判断是否管理员
+                if uid in chat_rules.is_administrator:  # 判断是否管理员
                     if message.strip().startswith('禁止群消息'):
                         chat_rules.is_group = 0
                         send_group_message(gid, '已禁止群消息', uid)
@@ -247,10 +234,10 @@ def chat(msg, sessionid):
             ]
             return '人格已重置'
         if '连续对话' == msg.strip():
-            chat_rules.is_continue = 1
+            chat_rules.is_continue[sessionid] = 1
             return '连续对话模式已开启'
         if '单次对话' == msg.strip():
-            chat_rules.is_continue = 0
+            chat_rules.is_continue[sessionid] = 0
             return '单次对话模式已开启'
         if '指令说明' == msg.strip():
             return "指令如下(群内需@机器人)：\n1.[重置会话]\n2.[设置人格] 请发送 设置人格+人格描述\n3.[重置人格]\n4.[指令说明]\n5.[禁止群消息]\n6.[允许群消息]\n7.[快干活啦]\n8.[单次对话]\n9.[连续对话]\n10.[生成图像]"
@@ -277,8 +264,8 @@ def chat(msg, sessionid):
             # del session['msg'][len(session['msg']) - 1:len(session['msg'])]
             # 重新交互
             message = chat(msg, sessionid)
-        
-        if chat_rules.is_continue:
+        print(len(session['msg']))
+        if chat_rules.is_continue[sessionid] or len(session['msg']) == 1:
             # 记录上下文
             session['msg'].append({"role": "assistant", "content": message})
         else:
@@ -294,10 +281,12 @@ def chat(msg, sessionid):
 
 # 获取对话session
 def get_chat_session(sessionid):
+    global chat_rules
     if sessionid not in sessions:
         config = deepcopy(session_config)
         config['id'] = sessionid
         sessions[sessionid] = config
+        chat_rules.is_continue[sessionid] = 0
     return sessions[sessionid]
 
 
@@ -324,7 +313,7 @@ def chat_with_gpt(messages):
                 chat_rules.current_key_index = 0
             else:
                 chat_rules.current_key_index = chat_rules.current_key_index + 1
-                chat_rules.max_num = max_num + 1
+                chat_rules.max_num = chat_rules.max_num + 1
 
             print("速率限制，尝试切换key")
            
